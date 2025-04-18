@@ -1,14 +1,20 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { FaEyeSlash } from "react-icons/fa";
 import { FaEye } from "react-icons/fa";
 import loginlogo from "../assest/signin.gif"
 import imageTobase64 from '../helper/imageTobase64'
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import summaryApi from '../../commomAPI';
 const Signup = () => {
+
+    const navigate = useNavigate();
 
     const [showpassword, setshowpassword] = useState(false);
     const [showpassword2, setshowpassword2] = useState(false);
+    const [loading, setloading] = useState(false);
     const [formData, setformData] = useState({
         name: "",
         confirmPassword: "",
@@ -44,21 +50,35 @@ const Signup = () => {
 
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async(e) => {
         e.preventDefault();
-        if (formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match");
-            return;
+        const toastId = toast.loading('Loading...');
+    
+        try {
+            const response = await axios.post(summaryApi.sigUp.url, 
+                formData 
+            );
+    
+            if (response.data.success) {
+                toast.dismiss(toastId);
+                toast.success("Signup successful!");
+                navigate("/login");
+                // Clear form after successful signup
+                setformData({
+                    name: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    profilePic: ""  // Don't forget to clear profile pic
+                });
+            } else {
+                toast.dismiss(toastId);
+                toast.error(response.data.message || "Signup failed. Please try again.");
+            }
+        } catch(err) {
+            toast.dismiss(toastId);
+            toast.error(err.response?.data?.message || "Something went wrong");
         }
-        console.log(formData);
-
-        setformData({
-            name: "",
-            email: "",
-            password: "",
-            confirmPassword: ""
-        })
-
     }
 
     return (
