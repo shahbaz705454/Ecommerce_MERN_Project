@@ -2,14 +2,17 @@ const express = require("express");
 const cors = require("cors");
 const dbConnect = require("./config/db");  // Changed from destructuring to regular require
 const router = require("./routes");
+const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());  // Added middleware to parse JSON bodies
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ limit: '5mb', extended: true }));  // Added middleware to parse URL-encoded bodies
 app.use("/api",router);
+app.use(cookieParser());  // Added cookie parser middleware
 const PORT = process.env.PORT || 3000;  // Changed PORT to 3000 as fallback
 
 // Connect to database before starting server

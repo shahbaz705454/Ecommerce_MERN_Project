@@ -4,14 +4,20 @@ import { FaEye } from "react-icons/fa";
 import { useState } from 'react';
 import { FaEyeSlash } from "react-icons/fa";
 import loginlogo from "../assest/signin.gif"
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import summaryApi from '../../commomAPI';
 
 const Login = () => {
-
+    const navigate = useNavigate();
     const [showpassword, setshowpassword] = useState(false);
     const [formData, setformData] = useState({
         email: "",
         password: ""
     })
+
+
 
     const handleChange = (e) => {
         setformData((prev) => {
@@ -23,14 +29,41 @@ const Login = () => {
         })
     }
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
 
-        setformData({
-            email: "",
-            password: ""
-        })
+        const toastId = toast.loading("Logging in...");
+
+        try {
+            if (!formData.email || !formData.password) {
+                toast.dismiss(toastId);
+                toast.error("Please fill in all fields");
+                return;
+            }
+
+            const response = await axios.post(summaryApi.signIn.url, formData);
+            if (response.data.success) {
+                toast.dismiss(toastId);
+                toast.success("Login successful!");
+                setformData({
+                    email: "",
+                    password: ""
+                })
+
+                navigate("/");
+            } else {
+                toast.dismiss(toastId);
+                toast.error(response.data.message || "Login failed");
+            }
+
+
+        } catch (err) {
+            toast.dismiss(toastId);
+            toast.error(err.response?.data?.message || "An error occurred during login");
+        }
+
+
+
 
     }
 
